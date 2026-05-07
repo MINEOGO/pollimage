@@ -1,0 +1,7 @@
+node_modules
+.npm
+package-lock.json
+pollimage
+images
+*.log
+.DS_Store
