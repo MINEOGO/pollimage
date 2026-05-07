@@ -5,7 +5,7 @@ Pollimage CLI by mineogo - Generate images with Pollinations AI.
 ## Installation
 
 ```bash
-npm install -g .
+npm install -g pollimage
 ```
 
 ## Usage
