@@ -1,6 +1,6 @@
 {
-  "name": "@mineogo/pollimage",
-  "version": "1.1.0",
+  "name": "pollimage",
+  "version": "1.1.1",
   "description": "Pollimage CLI by mineogo - Generate images with Pollinations AI",
   "type": "module",
   "bin": {
