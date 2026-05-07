@@ -57,9 +57,9 @@ program
     await checkApiKey();
     const spinner = ora(`generating with ${options.model}...`).start();
     try {
-      const { filePath, hash } = await generateImage(prompt, options);
+      const { filePath, hash, buffer } = await generateImage(prompt, options);
       spinner.succeed(chalk.green(`✔ done: ${hash}.jpg`));
-      displayImage(filePath);
+      await displayImage(buffer);
     } catch (error) {
       if (error.response?.status === 401) {
         spinner.fail(chalk.red('✖ error 401: invalid api key.'));

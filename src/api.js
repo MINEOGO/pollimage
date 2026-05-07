@@ -4,7 +4,7 @@ import path from 'path';
 import crypto from 'crypto';
 import os from 'os';
 import config from './config.js';
-import { execSync } from 'child_process';
+import terminalImage from 'terminal-image';
 
 const IMAGES_DIR = path.join(os.homedir(), 'pollimage', 'images');
 
@@ -79,13 +79,13 @@ export async function generateImage(prompt, options = {}) {
   const filePath = path.join(IMAGES_DIR, filename);
   await fs.writeFile(filePath, response.data);
 
-  return { filePath, hash };
+  return { filePath, hash, buffer: response.data };
 }
 
-export function displayImage(filePath) {
+export async function displayImage(buffer) {
   try {
-    execSync(`viu "${filePath}"`, { stdio: 'inherit' });
+    console.log(await terminalImage.buffer(buffer));
   } catch (error) {
-    console.error('viu not found. install it to see images.');
+    console.error('could not display image.');
   }
 }

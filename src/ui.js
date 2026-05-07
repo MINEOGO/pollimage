@@ -203,10 +203,10 @@ export async function startInteractiveSession() {
         const model = config.get('defaultModel');
         const spinner = ora(`generating with ${model}...`).start();
         try {
-          const { filePath, hash } = await generateImage(inputVal);
+          const { filePath, hash, buffer } = await generateImage(inputVal);
           const homePath = path.join(os.homedir(), 'pollimage', 'images', `${hash}.jpg`);
           spinner.succeed(chalk.green(`✔ done: ${homePath}`));
-          displayImage(filePath);
+          await displayImage(buffer);
         } catch (error) {
           spinner.fail(chalk.red(`✖ error: ${error.message}`));
         }
