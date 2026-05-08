@@ -32,5 +32,5 @@ pollimage set-key 0 # removes the key
 - Dynamic status bar (API key status, active model, pollen balance).
 - Searchable model selector via `/set model`.
 - Auto-fetches live models from Pollinations AI.
-- Saves images to `pollimage/images/` and displays in terminal via `viu`.
-- Comment-free codebase.
+- Saves images to `pollimage/images/` and displays in terminal via `terminal-image`
+- Comment-free codebase for 0% bloat.
