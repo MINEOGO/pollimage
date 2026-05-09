@@ -11,17 +11,23 @@ const IMAGES_DIR = path.join(os.homedir(), 'pollimage', 'images');
 export async function fetchModels() {
   try {
     const response = await axios.get('https://gen.pollinations.ai/image/models');
-    return response.data
+    const models = response.data
       .filter(m => m.output_modalities && m.output_modalities.includes('image'))
       .map(m => {
         const cost = parseFloat(m.pricing?.completionImageTokens || 0);
-        const gensPerPollen = cost > 0 ? Math.round(1 / cost) : 'N/A';
+        const gensPerPollen = cost > 0 ? Math.round(1 / cost) : 0;
         return {
           id: m.name,
           description: m.description,
           gensPerPollen: gensPerPollen
         };
       });
+    
+    return models.sort((a, b) => b.gensPerPollen - a.gensPerPollen)
+      .map(m => ({
+        ...m,
+        gensPerPollen: m.gensPerPollen === 0 ? 'N/A' : m.gensPerPollen
+      }));
   } catch (error) {
     return [{ id: 'flux', gensPerPollen: 1000 }];
   }
