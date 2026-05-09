@@ -5,6 +5,7 @@ import crypto from 'crypto';
 import os from 'os';
 import config from './config.js';
 import terminalImage from 'terminal-image';
+import chalk from 'chalk';
 
 const IMAGES_DIR = path.join(os.homedir(), 'pollimage', 'images');
 
@@ -12,24 +13,36 @@ export async function fetchModels() {
   try {
     const response = await axios.get('https://gen.pollinations.ai/image/models');
     const models = response.data
-      .filter(m => m.output_modalities && m.output_modalities.includes('image'))
+      .filter(m => m.output_modalities && m.output_modalities.includes('image') && !m.output_modalities.includes('video'))
       .map(m => {
         const cost = parseFloat(m.pricing?.completionImageTokens || 0);
-        const gensPerPollen = cost > 0 ? Math.round(1 / cost) : 0;
+        const gensPerPollen = cost > 0 ? (1 / cost) : 0;
+        let id = m.name;
+        if (m.paid_only) {
+          id += ` ${chalk.cyan('(💎 PAID)')}`;
+        }
         return {
           id: m.name,
+          displayName: id,
           description: m.description,
           gensPerPollen: gensPerPollen
         };
       });
     
-    return models.sort((a, b) => b.gensPerPollen - a.gensPerPollen)
-      .map(m => ({
+    const sorted = models.sort((a, b) => b.gensPerPollen - a.gensPerPollen);
+    
+    return sorted.map(m => {
+      let displayGens = 'N/A';
+      if (m.gensPerPollen > 0) {
+        displayGens = m.gensPerPollen >= 100 ? Math.round(m.gensPerPollen).toLocaleString() : m.gensPerPollen.toFixed(1);
+      }
+      return {
         ...m,
-        gensPerPollen: m.gensPerPollen === 0 ? 'N/A' : m.gensPerPollen
-      }));
+        gensPerPollen: displayGens
+      };
+    });
   } catch (error) {
-    return [{ id: 'flux', gensPerPollen: 1000 }];
+    return [{ id: 'flux', displayName: 'flux', gensPerPollen: '1,000' }];
   }
 }
 

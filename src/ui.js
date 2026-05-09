@@ -1,12 +1,12 @@
-import readline from 'readline';
+import { input, select, search } from '@inquirer/prompts';
 import chalk from 'chalk';
 import ora from 'ora';
 import config from './config.js';
 import { generateImage, displayImage, fetchModels, fetchBalance } from './api.js';
+import fuzzy from 'fuzzy';
 import os from 'os';
 import path from 'path';
-import { search, input } from '@inquirer/prompts';
-import fuzzy from 'fuzzy';
+import readline from 'readline';
 
 let history = [];
 let historyIndex = -1;
@@ -44,7 +44,7 @@ async function selectModel() {
   spinner.stop();
 
   const choices = models.map(m => ({
-    name: `${m.id} | ${m.gensPerPollen} gens/pollen`,
+    name: `${m.displayName} | ${m.gensPerPollen} gens/pollen`,
     value: m.id,
     description: m.description
   }));
@@ -79,10 +79,8 @@ function renderUI(rl) {
     readline.cursorTo(process.stdout, 0);
     readline.clearScreenDown(process.stdout);
   }
-
   let output = '';
   let linesCount = 0;
-
   if (currentBuffer.startsWith('/') && filteredSuggestions.length > 0) {
     output += '\n';
     linesCount++;
@@ -92,11 +90,9 @@ function renderUI(rl) {
       linesCount++;
     });
   }
-
   output += chalk.gray(rl.statusLine || '') + '\n';
   linesCount++;
   output += '> ' + currentBuffer;
-
   process.stdout.write(output);
   lastLinesDrawn = linesCount;
 }
@@ -105,22 +101,17 @@ export async function startInteractiveSession() {
   await checkApiKey();
   console.log(chalk.cyan('pollimage - by mineogo'));
   console.log(chalk.gray('type prompt or /help'));
-
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
     terminal: true
   });
-
   readline.emitKeypressEvents(process.stdin);
   if (process.stdin.isTTY) process.stdin.setRawMode(true);
-
   rl.statusLine = await getStatusLine();
   renderUI(rl);
-
   process.stdin.on('keypress', async (str, key) => {
     if (key.ctrl && key.name === 'c') process.exit(0);
-
     if (key.name === 'up') {
       if (filteredSuggestions.length > 0) {
         suggestionIndex = (suggestionIndex - 1 + filteredSuggestions.length) % filteredSuggestions.length;
@@ -150,25 +141,21 @@ export async function startInteractiveSession() {
         renderUI(rl);
         return;
       }
-      const inputVal = currentBuffer.trim();
+      const val = currentBuffer.trim();
       currentBuffer = '';
       lastLinesDrawn = 0;
       console.log('');
-
-      if (!inputVal) {
+      if (!val) {
         rl.statusLine = await getStatusLine();
         renderUI(rl);
         return;
       }
-      
-      history.push(inputVal);
+      history.push(val);
       historyIndex = -1;
-
-      if (inputVal.startsWith('/')) {
-        const parts = inputVal.slice(1).split(' ');
+      if (val.startsWith('/')) {
+        const parts = val.slice(1).split(' ');
         const cmd = parts[0].toLowerCase();
         const args = parts.slice(1);
-
         if (cmd === 'exit' || cmd === 'quit') process.exit(0);
         else if (cmd === 'help') showHelp();
         else if (cmd === 'clear' || cmd === 'clr') {
@@ -179,20 +166,20 @@ export async function startInteractiveSession() {
           const ms = await fetchModels();
           spinner.stop();
           console.log(chalk.cyan('\nAvailable Image Models:'));
-          ms.forEach(m => console.log(chalk.white(` - ${m.id} (${m.gensPerPollen} gens/pollen)`)));
+          ms.forEach(m => console.log(chalk.white(` - ${m.displayName} (${m.gensPerPollen} gens/pollen)`)));
           console.log('');
         } else if (cmd === 'set') {
-          const keyType = args[0]?.toLowerCase();
-          const val = args[1];
-          if (keyType === 'apikey') {
-            if (val === '0') {
+          const kt = args[0]?.toLowerCase();
+          const v = args[1];
+          if (kt === 'apikey') {
+            if (v === '0') {
               config.set('apiKey', '');
               console.log(chalk.green('apikey removed!'));
-            } else if (val) {
-              config.set('apiKey', val);
+            } else if (v) {
+              config.set('apiKey', v);
               console.log(chalk.green('apikey set!'));
             }
-          } else if (keyType === 'model') {
+          } else if (kt === 'model') {
             process.stdin.setRawMode(false);
             await selectModel();
             process.stdin.setRawMode(true);
@@ -200,12 +187,12 @@ export async function startInteractiveSession() {
           }
         } else console.log(chalk.red('? unknown command'));
       } else {
-        const model = config.get('defaultModel');
-        const spinner = ora(`generating with ${model}...`).start();
+        const m = config.get('defaultModel');
+        const spinner = ora(`generating with ${m}...`).start();
         try {
-          const { filePath, hash, buffer } = await generateImage(inputVal);
-          const homePath = path.join(os.homedir(), 'pollimage', 'images', `${hash}.jpg`);
-          spinner.succeed(chalk.green(`✔ done: ${homePath}`));
+          const { filePath, hash, buffer } = await generateImage(val);
+          const hp = path.join(os.homedir(), 'pollimage', 'images', `${hash}.jpg`);
+          spinner.succeed(chalk.green(`✔ done: ${hp}`));
           await displayImage(buffer);
         } catch (error) {
           spinner.fail(chalk.red(`✖ error: ${error.message}`));
@@ -218,7 +205,6 @@ export async function startInteractiveSession() {
     } else if (!key.ctrl && !key.meta && str && str.length === 1) {
       currentBuffer += str;
     }
-
     if (currentBuffer.startsWith('/')) {
       filteredSuggestions = suggestions.filter(s => s.startsWith(currentBuffer));
       if (filteredSuggestions.length > 0 && suggestionIndex === -1) suggestionIndex = 0;
@@ -227,7 +213,6 @@ export async function startInteractiveSession() {
       filteredSuggestions = [];
       suggestionIndex = -1;
     }
-
     renderUI(rl);
   });
 }
