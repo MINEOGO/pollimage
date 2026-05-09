@@ -43,11 +43,14 @@ async function selectModel() {
   const models = await fetchModels();
   spinner.stop();
 
-  const choices = models.map(m => ({
-    name: `${m.displayName} | ${m.pollenPerGen} pollen/gen`,
-    value: m.id,
-    description: m.description
-  }));
+  const choices = models.map(m => {
+    const imagesPerPollen = m.pollenPerGen > 0 ? Math.round(1 / m.pollenPerGen) : 0;
+    return {
+      name: `${m.displayName} | ${m.pollenPerGen.toFixed(4)} pollen/gen (≈${imagesPerPollen} gens/pollen)`,
+      value: m.id,
+      description: m.description
+    };
+  });
 
   const model = await search({
     message: 'Search/Select model:',
@@ -166,7 +169,10 @@ export async function startInteractiveSession() {
           const ms = await fetchModels();
           spinner.stop();
           console.log(chalk.cyan('\nAvailable Image Models:'));
-          ms.forEach(m => console.log(chalk.white(` - ${m.displayName} (${m.pollenPerGen} pollen/gen)`)));
+          ms.forEach(m => {
+            const imgPerPol = m.pollenPerGen > 0 ? Math.round(1 / m.pollenPerGen) : 0;
+            console.log(chalk.white(` - ${m.displayName} | ${m.pollenPerGen.toFixed(4)} pollen/gen (≈${imgPerPol} gens/pollen)`));
+          });
           console.log('');
         } else if (cmd === 'set') {
           const kt = args[0]?.toLowerCase();

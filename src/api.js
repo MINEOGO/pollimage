@@ -15,11 +15,17 @@ export async function fetchModels() {
     const models = response.data
       .filter(m => m.output_modalities && m.output_modalities.includes('image') && !m.output_modalities.includes('video'))
       .map(m => {
-        const cost = parseFloat(m.pricing?.completionImageTokens || 0);
+        let cost = parseFloat(m.pricing?.completionImageTokens || 0);
+        
+        if (cost > 0 && cost < 0.0005) {
+          cost = cost * 1562.5;
+        }
+
         let id = m.name;
         if (m.paid_only) {
           id += ` ${chalk.cyan('(💎 PAID)')}`;
         }
+        
         return {
           id: m.name,
           displayName: id,
