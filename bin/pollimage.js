@@ -12,7 +12,7 @@ const program = new Command();
 program
   .name('pollimage')
   .description('pollimage by mineogo')
-  .version('1.0.0');
+  .version('1.1.2');
 
 program
   .command('i')
@@ -42,7 +42,7 @@ program
     const models = await fetchModels();
     spinner.stop();
     console.log(chalk.cyan('\nAvailable Image Models:'));
-    models.forEach(m => console.log(chalk.white(` - ${m.id} (${m.gensPerPollen} gens/pollen)`)));
+    models.forEach(m => console.log(chalk.white(` - ${m.displayName} (${m.pollenPerGen} pollen/gen)`)));
     console.log('');
   });
 

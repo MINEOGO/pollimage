@@ -16,7 +16,6 @@ export async function fetchModels() {
       .filter(m => m.output_modalities && m.output_modalities.includes('image') && !m.output_modalities.includes('video'))
       .map(m => {
         const cost = parseFloat(m.pricing?.completionImageTokens || 0);
-        const gensPerPollen = cost > 0 ? (1 / cost) : 0;
         let id = m.name;
         if (m.paid_only) {
           id += ` ${chalk.cyan('(💎 PAID)')}`;
@@ -25,24 +24,13 @@ export async function fetchModels() {
           id: m.name,
           displayName: id,
           description: m.description,
-          gensPerPollen: gensPerPollen
+          pollenPerGen: cost
         };
       });
     
-    const sorted = models.sort((a, b) => b.gensPerPollen - a.gensPerPollen);
-    
-    return sorted.map(m => {
-      let displayGens = 'N/A';
-      if (m.gensPerPollen > 0) {
-        displayGens = m.gensPerPollen >= 100 ? Math.round(m.gensPerPollen).toLocaleString() : m.gensPerPollen.toFixed(1);
-      }
-      return {
-        ...m,
-        gensPerPollen: displayGens
-      };
-    });
+    return models.sort((a, b) => a.pollenPerGen - b.pollenPerGen);
   } catch (error) {
-    return [{ id: 'flux', displayName: 'flux', gensPerPollen: '1,000' }];
+    return [{ id: 'flux', displayName: 'flux', pollenPerGen: 0.001 }];
   }
 }
 

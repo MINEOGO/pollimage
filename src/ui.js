@@ -44,7 +44,7 @@ async function selectModel() {
   spinner.stop();
 
   const choices = models.map(m => ({
-    name: `${m.displayName} | ${m.gensPerPollen} gens/pollen`,
+    name: `${m.displayName} | ${m.pollenPerGen} pollen/gen`,
     value: m.id,
     description: m.description
   }));
@@ -166,7 +166,7 @@ export async function startInteractiveSession() {
           const ms = await fetchModels();
           spinner.stop();
           console.log(chalk.cyan('\nAvailable Image Models:'));
-          ms.forEach(m => console.log(chalk.white(` - ${m.displayName} (${m.gensPerPollen} gens/pollen)`)));
+          ms.forEach(m => console.log(chalk.white(` - ${m.displayName} (${m.pollenPerGen} pollen/gen)`)));
           console.log('');
         } else if (cmd === 'set') {
           const kt = args[0]?.toLowerCase();
